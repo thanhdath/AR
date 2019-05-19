@@ -57,7 +57,7 @@ dist_coeffs = np.load('dist_coeff.npy')
 while(True):
     # Capture frame-by-frame
     # ret, frame = cap.read()
-    frame = cv2.imread('surface.png')
+    frame = cv2.imread('1.png')
     frame = aug.augment_image(frame)
     time.sleep(0.2)
 
@@ -75,33 +75,34 @@ while(True):
         '''
         #lists of ids and the corners beloning to each id
     corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
+    if len(corners) >0:
+        print("Found it")
+        # print(rejectedImgPoints)
 
-    # print(rejectedImgPoints)
+        #It's working.
+        # my problem was that the cellphone put black all around it. The alrogithm
+        # depends very much upon finding rectangular black blobs
 
-    #It's working.
-    # my problem was that the cellphone put black all around it. The alrogithm
-    # depends very much upon finding rectangular black blobs
+        # gray = aruco.drawDetectedMarkers(frame, corners, ids)
+        # cv2.polylines(frame, corners[0].astype(np.int32), True, color=(0,255,0))
+        # cv2.polylines(frame, [x.reshape(-1,2).astype(np.int32) for x in rejectedImgPoints], True, color=(0,0,255))
+        # rvec, tvec, cc = aruco.estimatePoseSingleMarkers(corners, 0.05, camera_matrix, dist_coeffs)
+        # rvec: rotation vector, tvec: translation vector
+        # aruco.drawAxis(frame, camera_matrix, dist_coeffs, rvec, tvec, 0.1)
 
-    # gray = aruco.drawDetectedMarkers(frame, corners, ids)
-    # cv2.polylines(frame, corners[0].astype(np.int32), True, color=(0,255,0))
-    # cv2.polylines(frame, [x.reshape(-1,2).astype(np.int32) for x in rejectedImgPoints], True, color=(0,0,255))
-    # rvec, tvec, cc = aruco.estimatePoseSingleMarkers(corners, 0.05, camera_matrix, dist_coeffs)
-    # rvec: rotation vector, tvec: translation vector
-    # aruco.drawAxis(frame, camera_matrix, dist_coeffs, rvec, tvec, 0.1)
+        homography, mask = cv2.findHomography(src_pts, corners[0])
+        projection = projection_matrix(camera_parameters, homography)
+        
+        frame = render(frame, obj, projection, model, False)
 
-    homography, mask = cv2.findHomography(src_pts, corners[0])
-    projection = projection_matrix(camera_parameters, homography)
-    
-    frame = render(frame, obj, projection, model, False)
+        # pt = np.array([0,0,0])
+        # # import pdb; pdb.set_trace()
+        # pt = pt.dot(rvec)
+        # pt = pt.dot(tvec)
+        # pt = 
 
-    # pt = np.array([0,0,0])
-    # # import pdb; pdb.set_trace()
-    # pt = pt.dot(rvec)
-    # pt = pt.dot(tvec)
-    # pt = 
-
-    #print(rejectedImgPoints)
-    # Display the resulting frame
+        #print(rejectedImgPoints)
+        # Display the resulting frame
     cv2.imshow('frame',frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
